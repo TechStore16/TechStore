@@ -1,180 +1,339 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجري</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #f7fafc;
-        }
-        .container-padding {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-        @media (min-width: 768px) {
-            .container-padding {
-                padding-left: 2rem;
-                padding-right: 2rem;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: #f7f7f7;
+    }
+    /* Hide the scrollbar for the modal content */
+    #cartModal::-webkit-scrollbar {
+        display: none;
+    }
+    #cartModal {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+  <!-- Firebase CDN Imports -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    setLogLevel('Debug');
+
+    // Global variables for Firebase
+    window.db = null;
+    window.auth = null;
+    window.userId = null;
+    window.isAuthReady = false;
+
+    // Firebase configuration and authentication token are provided by the environment
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+    if (Object.keys(firebaseConfig).length > 0) {
+      const app = initializeApp(firebaseConfig);
+      window.db = getFirestore(app);
+      window.auth = getAuth(app);
+
+      onAuthStateChanged(window.auth, async (user) => {
+        if (user) {
+          window.userId = user.uid;
+        } else {
+          try {
+            if (initialAuthToken) {
+              const userCredential = await signInWithCustomToken(window.auth, initialAuthToken);
+              window.userId = userCredential.user.uid;
+            } else {
+              const userCredential = await signInAnonymously(window.auth);
+              window.userId = userCredential.user.uid;
             }
+          } catch (error) {
+            console.error("Firebase auth error:", error);
+          }
         }
-    </style>
-</head>
-<body class="text-gray-800">
+        window.isAuthReady = true;
+        // Call main setup function after authentication
+        setupStore();
+      });
+    } else {
+      console.error("Firebase config is missing. The app will not function correctly.");
+    }
 
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-md p-4 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-gray-800">متجري</a>
-            <div class="flex space-x-4">
-                <a href="#home" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">الرئيسية</a>
-                <a href="#products" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">المنتجات</a>
-                <a href="#about" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">من نحن</a>
-                <a href="#contact" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">اتصل بنا</a>
+    const productsCollectionPath = `artifacts/${appId}/public/data/products`;
+
+    // Initial products data
+    const initialProducts = [
+      {
+        id: "product_1",
+        name: "ٌRépéteur WIFI 300 Mbps",
+        description: "مكرر اشارة الغني عن التعريف",
+        price: 2400,
+        imageUrl: "https://imgur.com/a/jv5v2i3"
+      },
+      {
+        id: "product_2",
+        name: "سماعات لاسلكية",
+        description: "سماعات عالية الجودة بتصميم مريح وصوت نقي.",
+        price: 15000.00,
+        imageUrl: "https://placehold.co/400x300/e2e8f0/64748b?text=سماعات"
+      },
+      {
+        id: "product_3",
+        name: "ساعة ذكية",
+        description: "ساعة ذكية لتتبع نشاطك اليومي وصحتك.",
+        price: 30000.00,
+        imageUrl: "https://placehold.co/400x300/e2e8f0/64748b?text=ساعة+ذكية"
+      },
+      {
+        id: "product_4",
+        name: "كاميرا احترافية",
+        description: "كاميرا مثالية لالتقاط أجمل اللحظات بجودة عالية.",
+        price: 120000.00,
+        imageUrl: "https://placehold.co/400x300/e2e8f0/64748b?text=كاميرا"
+      }
+    ];
+
+    async function initializeProducts() {
+      if (!window.db) return;
+      try {
+        const productsRef = collection(window.db, productsCollectionPath);
+        const snapshot = await getDocs(productsRef);
+        if (snapshot.empty) {
+          console.log("Adding initial products to Firestore...");
+          for (const product of initialProducts) {
+            await setDoc(doc(productsRef, product.id), product);
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing products:", error);
+      }
+    }
+
+    function renderProducts(products) {
+      const productsContainer = document.getElementById('productsContainer');
+      productsContainer.innerHTML = '';
+      products.forEach(product => {
+        const productCard = `
+          <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover rounded-xl mb-4" onerror="this.onerror=null;this.src='https://placehold.co/400x300/e2e8f0/64748b?text=صورة+غير+متاحة';">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">${product.name}</h3>
+            <p id="description-${product.id}" class="text-gray-600 mb-4">${product.description}</p>
+            <div class="flex flex-col items-center justify-between space-y-4">
+              <span class="text-2xl font-bold text-green-600">${product.price.toFixed(2)} د.ج</span>
+              <div class="flex justify-center space-x-4 space-x-reverse w-full">
+                <button onclick="addToCart('${product.id}', '${product.name}', ${product.price})" class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">أضف إلى السلة</button>
+                <button onclick="generateDescription('${product.id}', '${product.name}', '${product.description}')" class="flex-1 bg-purple-600 text-white px-6 py-2 rounded-full shadow-lg hover:bg-purple-700 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">وصف بلمسة سحرية ✨</button>
+              </div>
             </div>
-        </div>
-    </nav>
+          </div>
+        `;
+        productsContainer.innerHTML += productCard;
+      });
+    }
 
-    <!-- Hero Section -->
-    <header id="home" class="bg-blue-500 text-white text-center py-20 md:py-32">
-        <div class="container mx-auto px-4">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">اكتشف منتجاتنا المميزة</h1>
-            <p class="text-xl md:text-2xl mb-8">تسوق الآن واحصل على أفضل العروض</p>
-            <a href="#products" class="bg-white text-blue-500 font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">تصفح المنتجات</a>
-        </div>
-    </header>
+    window.addToCart = async (productId, productName, productPrice) => {
+      if (!window.db || !window.userId) {
+        showMessage('خطأ: لم يتم تحميل قاعدة البيانات بشكل صحيح.', 'red');
+        return;
+      }
+      try {
+        const cartItemRef = doc(window.db, `artifacts/${appId}/users/${window.userId}/cart/${productId}`);
+        const cartItemDoc = await getDoc(cartItemRef);
+        if (cartItemDoc.exists()) {
+          const newQuantity = cartItemDoc.data().quantity + 1;
+          await updateDoc(cartItemRef, { quantity: newQuantity });
+        } else {
+          await setDoc(cartItemRef, {
+            id: productId,
+            name: productName,
+            price: productPrice,
+            quantity: 1
+          });
+        }
+        showMessage(`تم إضافة "${productName}" إلى سلة التسوق!`, 'green');
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        showMessage('حدث خطأ أثناء إضافة المنتج.', 'red');
+      }
+    };
 
-    <!-- Products Section -->
-    <section id="products" class="py-16 md:py-24 container-padding">
-        <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">منتجاتنا</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Product Card 1 -->
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
-                    <img src="https://placehold.co/600x400/E5E7EB/4B5563?text=منتج+1" alt="منتج 1" class="w-full h-48 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">اسم المنتج 1</h3>
-                        <p class="text-gray-600 mb-4">وصف قصير للمنتج. يمكن أن يكون هذا المنتج هو مقوي الواي فاي أو أي شيء آخر.</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-2xl font-bold text-blue-500">2400 دج</span>
-                            <button class="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300">أضف إلى السلة</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product Card 2 -->
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
-                    <img src="https://placehold.co/600x400/D1D5DB/6B7280?text=منتج+2" alt="منتج 2" class="w-full h-48 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">اسم المنتج 2</h3>
-                        <p class="text-gray-600 mb-4">وصف قصير للمنتج. يمكن أن يكون هذا المنتج شيئًا آخر تبيعه في متجرك.</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-2xl font-bold text-blue-500">3500 دج</span>
-                            <button class="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300">أضف إلى السلة</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product Card 3 -->
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
-                    <img src="https://placehold.co/600x400/E5E7EB/4B5563?text=منتج+3" alt="منتج 3" class="w-full h-48 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold mb-2">اسم المنتج 3</h3>
-                        <p class="text-gray-600 mb-4">وصف قصير للمنتج. هذا مثال آخر لمنتج يمكنك بيعه.</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-2xl font-bold text-blue-500">1200 دج</span>
-                            <button class="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300">أضف إلى السلة</button>
-                        </div>
-                    </div>
-                </div>
+    window.removeFromCart = async (productId) => {
+      if (!window.db || !window.userId) return;
+      try {
+        await deleteDoc(doc(window.db, `artifacts/${appId}/users/${window.userId}/cart/${productId}`));
+        showMessage('تم حذف المنتج من السلة.', 'red');
+      } catch (error) {
+        console.error("Error removing from cart:", error);
+      }
+    };
+
+    function updateCartUI(cartItems) {
+      const cartItemsContainer = document.getElementById('cartItems');
+      const cartTotalElement = document.getElementById('cartTotal');
+      const cartBadge = document.getElementById('cartBadge');
+      let total = 0;
+      let totalItems = 0;
+
+      cartItemsContainer.innerHTML = '';
+      if (cartItems.length === 0) {
+        cartItemsContainer.innerHTML = '<p class="text-gray-500">سلة التسوق فارغة.</p>';
+      } else {
+        cartItems.forEach(item => {
+          total += item.price * item.quantity;
+          totalItems += item.quantity;
+          const cartItemDiv = document.createElement('div');
+          cartItemDiv.className = "flex items-center justify-between py-2 border-b border-gray-200";
+          cartItemDiv.innerHTML = `
+            <div class="flex items-center">
+              <span class="font-bold text-gray-800">${item.name}</span>
+              <span class="mx-2 text-gray-600">(${item.quantity})</span>
             </div>
-        </div>
-    </section>
-
-    <!-- About Us Section -->
-    <section id="about" class="py-16 md:py-24 bg-gray-100 container-padding">
-        <div class="container mx-auto text-center">
-            <h2 class="text-3xl md:text-4xl font-bold mb-8">من نحن</h2>
-            <p class="text-lg text-gray-700 max-w-3xl mx-auto">
-                نحن متجر متخصص في بيع أفضل المنتجات الإلكترونية والحلول التقنية. هدفنا هو توفير منتجات عالية الجودة بأسعار تنافسية وتقديم أفضل خدمة للعملاء. نحن نؤمن بأن التكنولوجيا يجب أن تكون في متناول الجميع، وهذا ما نسعى لتحقيقه.
-            </p>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-16 md:py-24 container-padding">
-        <div class="container mx-auto">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">اتصل بنا</h2>
-            <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-                <!-- Form element with ID -->
-                <form id="contactForm">
-                    <div class="mb-4">
-                        <label for="name" class="block text-gray-700 font-bold mb-2">الاسم:</label>
-                        <input type="text" id="name" name="name" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="email" class="block text-gray-700 font-bold mb-2">البريد الإلكتروني:</label>
-                        <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="message" class="block text-gray-700 font-bold mb-2">الرسالة:</label>
-                        <textarea id="message" name="message" rows="5" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
-                    </div>
-                    <div class="text-center">
-                        <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-600 transition-colors duration-300">إرسال</button>
-                    </div>
-                </form>
-                <!-- Message area for form submission feedback -->
-                <div id="formMessage" class="mt-4 text-center hidden"></div>
+            <div class="flex items-center">
+              <span class="text-green-600">${(item.price * item.quantity).toFixed(2)} د.ج</span>
+              <button onclick="removeFromCart('${item.id}')" class="ml-4 text-red-500 hover:text-red-700">حذف</button>
             </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-400 py-8 text-center">
-        <p>&copy; 2024 جميع الحقوق محفوظة لمتجري.</p>
-    </footer>
-
-    <!-- JavaScript for form submission to Google Sheets -->
-    <script>
-        const form = document.getElementById('contactForm');
-        const formMessage = document.getElementById('formMessage');
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevent the default form submission
-
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-
-            // Replace with your Google Apps Script Web App URL
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw-L049eOU_hFIaqg2c9d0FI0e-FHbI0Xx58R6pxXNeJm94RZgDWzuG4WkKMGzap7A/exec';
-
-            fetch(scriptUrl, {
-                method: 'POST',
-                mode: 'no-cors', // Required for simple requests
-                cache: 'no-cache',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(data).toString()
-            })
-            .then(() => {
-                formMessage.textContent = 'تم إرسال رسالتك بنجاح!';
-                formMessage.classList.remove('hidden');
-                formMessage.classList.add('text-green-500');
-                form.reset();
-            })
-            .catch(error => {
-                formMessage.textContent = 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
-                formMessage.classList.remove('hidden');
-                formMessage.classList.add('text-red-500');
-                console.error('Error:', error);
-            });
+          `;
+          cartItemsContainer.appendChild(cartItemDiv);
         });
-    </script>
+      }
+      cartTotalElement.textContent = `${total.toFixed(2)} د.ج`;
+      cartBadge.textContent = totalItems;
+      cartBadge.classList.toggle('hidden', totalItems === 0);
+    }
+
+    function setupStore() {
+      if (!window.db) return;
+
+      initializeProducts();
+
+      // Listen for real-time updates on products
+      onSnapshot(collection(window.db, productsCollectionPath), (snapshot) => {
+        const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts(products);
+      });
+
+      // Listen for real-time updates on the user's cart
+      if (window.userId) {
+        onSnapshot(collection(window.db, `artifacts/${appId}/users/${window.userId}/cart`), (snapshot) => {
+          const cartItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          updateCartUI(cartItems);
+        });
+      }
+    }
+
+    function showMessage(text, type = 'green') {
+      const messageBox = document.getElementById('messageBox');
+      const messageText = document.getElementById('messageText');
+      messageBox.className = `bg-${type}-100 border border-${type}-400 text-${type}-700 px-4 py-3 rounded-lg relative mb-6`;
+      messageText.textContent = text;
+      messageBox.classList.remove('hidden');
+      setTimeout(() => {
+        messageBox.classList.add('hidden');
+      }, 3000);
+    }
+
+    window.onload = function() {
+      // Cart modal logic
+      const cartButton = document.getElementById('cartButton');
+      const closeCartButton = document.getElementById('closeCart');
+      const cartModal = document.getElementById('cartModal');
+      const checkoutButton = document.getElementById('checkoutButton');
+
+      cartButton.addEventListener('click', () => {
+        cartModal.classList.remove('hidden');
+      });
+
+      closeCartButton.addEventListener('click', () => {
+        cartModal.classList.add('hidden');
+      });
+
+      checkoutButton.addEventListener('click', () => {
+        showMessage('عملية الدفع غير مفعلة حالياً.', 'blue');
+      });
+    };
+  </script>
+</head>
+<body class="bg-gray-100">
+
+  <!-- Header Section -->
+  <header class="bg-white shadow-sm py-4 sticky top-0 z-50">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-gray-800">Tech Store</h1>
+      <nav class="flex items-center space-x-4 space-x-reverse">
+        <a href="#" class="text-gray-600 hover:text-gray-900 mx-2">الرئيسية</a>
+        <a href="#" class="text-gray-600 hover:text-gray-900 mx-2">منتجاتنا</a>
+        <a href="#" class="text-gray-600 hover:text-gray-900 mx-2">اتصل بنا</a>
+        <button id="cartButton" class="relative text-gray-600 hover:text-gray-900">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.198 1.705.432 2.335A1.2 1.2 0 0011 18h3m-3-4h.01M16 18H8a2 2 0 100 4h8a2 2 0 100-4z"></path>
+          </svg>
+          <span id="cartBadge" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full hidden">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Products Section -->
+  <main class="container mx-auto px-4 py-8">
+    <div id="messageBox" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-6 hidden" role="alert">
+      <span class="block sm:inline" id="messageText"></span>
+      <span class="absolute top-0 left-0 px-4 py-3 cursor-pointer" onclick="document.getElementById('messageBox').classList.add('hidden')">
+        <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>إغلاق</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.03a1.2 1.2 0 1 1-1.697-1.697l3.03-2.651-3.03-2.651a1.2 1.2 0 0 1 1.697-1.697l2.651 3.03 2.651-3.03a1.2 1.2 0 0 1 1.697 1.697l-3.03 2.651 3.03 2.651a1.2 1.2 0 0 1 0 1.697z"/></svg>
+      </span>
+    </div>
+
+    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">أحدث منتجاتنا</h2>
+
+    <!-- Dynamic Products Grid -->
+    <div id="productsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="text-center col-span-full">جاري تحميل المنتجات...</div>
+    </div>
+  </main>
+
+  <!-- Cart Modal -->
+  <div id="cartModal" class="fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex justify-center items-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-2xl font-bold">سلة التسوق</h3>
+        <button id="closeCart" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="cartItems" class="p-6 flex-grow overflow-y-auto">
+        <!-- Cart items will be rendered here -->
+      </div>
+      <div class="p-6 border-t border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-xl font-bold text-gray-800">الإجمالي:</span>
+          <span id="cartTotal" class="text-2xl font-bold text-green-600">0.00 د.ج</span>
+        </div>
+        <button id="checkoutButton" class="w-full bg-green-600 text-white py-3 rounded-full font-bold shadow-lg hover:bg-green-700 transition-colors duration-300">
+          إتمام الشراء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="bg-gray-800 text-white py-4 mt-8">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2024 Tech Store. جميع الحقوق محفوظة.</p>
+    </div>
+  </footer>
+
 </body>
 </html>
-
-
-
