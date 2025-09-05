@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مقوي الواي فاي - حلول الشبكات</title>
+    <title>متجري</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -11,112 +11,132 @@
             font-family: 'Tajawal', sans-serif;
             background-color: #f7fafc;
         }
-        .gradient-bg {
-            background-image: linear-gradient(to right, #4a90e2, #50c4e8);
+        .container-padding {
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
-        .btn-primary {
-            background-color: #50c4e8;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #4a90e2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        @media (min-width: 768px) {
+            .container-padding {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
         }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <!-- Hero Section -->
-    <div class="gradient-bg text-white py-20 md:py-32 text-center rounded-b-3xl shadow-xl">
-        <div class="container mx-auto px-4">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4 animate-fade-in-down">
-                هل سئمت من الواي فاي البطيء؟ 😠
-            </h1>
-            <p class="text-xl md:text-2xl mb-8 opacity-90 animate-fade-in-up">
-                لا تدع المناطق الميتة تفسد تجربتك. عزز شبكتك الآن!
-            </p>
-            <img src="31D+B4w8ZDL._UF1000,1000_QL80_.jpg" alt="صورة مقوي إشارة الواي فاي" class="mx-auto w-3/5 md:w-1/4 mb-4 rounded-lg shadow-lg">
-            <div class="flex items-center justify-center mb-8">
-                <span class="text-4xl md:text-5xl font-bold text-yellow-300">2400</span>
-                <span class="text-xl md:text-2xl font-bold text-white mr-2">دج</span>
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-gray-800">متجري</a>
+            <div class="flex space-x-4">
+                <a href="#home" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">الرئيسية</a>
+                <a href="#products" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">المنتجات</a>
+                <a href="#about" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">من نحن</a>
+                <a href="#contact" class="text-gray-600 hover:text-blue-500 transition-colors duration-300">اتصل بنا</a>
             </div>
-            <a href="https://wa.me/+213550776257" target="_blank" class="btn-primary inline-block text-white px-8 py-4 font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                اطلبه الآن!
-            </a>
-            <p class="mt-4 text-sm opacity-80">التوصيل متوفر 58 ولاية.</p>
         </div>
-    </div>
+    </nav>
 
-    <!-- Product Features Section -->
-    <section class="py-16 md:py-24">
+    <!-- Hero Section -->
+    <header id="home" class="bg-blue-500 text-white text-center py-20 md:py-32">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">لماذا تحتاج إلى مقوي الواي فاي هذا؟</h2>
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">اكتشف منتجاتنا المميزة</h1>
+            <p class="text-xl md:text-2xl mb-8">تسوق الآن واحصل على أفضل العروض</p>
+            <a href="#products" class="bg-white text-blue-500 font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">تصفح المنتجات</a>
+        </div>
+    </header>
+
+    <!-- Products Section -->
+    <section id="products" class="py-16 md:py-24 container-padding">
+        <div class="container mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">منتجاتنا</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Feature 1 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
-                    <div class="flex items-center justify-center text-4xl text-blue-500 mb-4">
-                        ✅
+                <!-- Product Card 1 -->
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
+                    <img src="https://placehold.co/600x400/E5E7EB/4B5563?text=منتج+1" alt="منتج 1" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">اسم المنتج 1</h3>
+                        <p class="text-gray-600 mb-4">وصف قصير للمنتج. يمكن أن يكون هذا المنتج هو مقوي الواي فاي أو أي شيء آخر.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-blue-500">2400 دج</span>
+                            <button class="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300">أضف إلى السلة</button>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-center mb-2">تغطية شاملة للمنزل</h3>
-                    <p class="text-gray-600 text-center">يوسع إشارة الواي فاي لتشمل المنزل بأكمله، ليضمن لك اتصالاً قوياً في كل زاوية.</p>
                 </div>
-                <!-- Feature 2 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
-                    <div class="flex items-center justify-center text-4xl text-blue-500 mb-4">
-                        ⚡
+                <!-- Product Card 2 -->
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
+                    <img src="https://placehold.co/600x400/D1D5DB/6B7280?text=منتج+2" alt="منتج 2" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">اسم المنتج 2</h3>
+                        <p class="text-gray-600 mb-4">وصف قصير للمنتج. يمكن أن يكون هذا المنتج شيئًا آخر تبيعه في متجرك.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-blue-500">3500 دج</span>
+                            <button class="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300">أضف إلى السلة</button>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-center mb-2">سهولة التركيب الفوري</h3>
-                    <p class="text-gray-600 text-center">بفضل زر WPS، يمكنك الاتصال بشبكتك في ثوانٍ، دون الحاجة لإدخال كلمة مرور معقدة. فقط قم بتوصيله واستمتع!</p>
                 </div>
-                <!-- Feature 3 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
-                    <div class="flex items-center justify-center text-4xl text-blue-500 mb-4">
-                        🚀
+                <!-- Product Card 3 -->
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
+                    <img src="https://placehold.co/600x400/E5E7EB/4B5563?text=منتج+3" alt="منتج 3" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">اسم المنتج 3</h3>
+                        <p class="text-gray-600 mb-4">وصف قصير للمنتج. هذا مثال آخر لمنتج يمكنك بيعه.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-blue-500">1200 دج</span>
+                            <button class="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300">أضف إلى السلة</button>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-center mb-2">جهاز 2 في 1</h3>
-                    <p class="text-gray-600 text-center">يعمل كمقوٍّ للإشارة (لتوسيع التغطية) أو كنقطة وصول (AP) لإنشاء شبكة واي فاي من اتصال سلكي.</p>
-                </div>
-                <!-- Feature 4 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
-                    <div class="flex items-center justify-center text-4xl text-blue-500 mb-4">
-                        🌐
-                    </div>
-                    <h3 class="text-xl font-bold text-center mb-2">توافق شامل</h3>
-                    <p class="text-gray-600 text-center">يعمل مع أي مودم أو راوتر واي فاي، مما يجعله الحل الأمثل لجميع الشبكات.</p>
-                </div>
-                <!-- Feature 5 -->
-                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
-                    <div class="flex items-center justify-center text-4xl text-blue-500 mb-4">
-                        🎮
-                    </div>
-                    <h3 class="text-xl font-bold text-center mb-2">اتصال مستقر للأجهزة</h3>
-                    <p class="text-gray-600 text-center">مثالي لتوصيل أجهزة الكمبيوتر، التلفزيونات الذكية، منصات الألعاب، والهواتف الذكية البعيدة عن المودم.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Call to Action Section -->
-    <section id="order" class="gradient-bg text-white py-16 text-center rounded-t-3xl shadow-inner">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl md:text-5xl font-bold mb-4">لا تتردد!</h2>
-            <p class="text-xl md:text-2xl mb-8 opacity-90">
-                اطلبه الآن واستمتع بتغطية واي فاي لا مثيل لها.
+    <!-- About Us Section -->
+    <section id="about" class="py-16 md:py-24 bg-gray-100 container-padding">
+        <div class="container mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">من نحن</h2>
+            <p class="text-lg text-gray-700 max-w-3xl mx-auto">
+                نحن متجر متخصص في بيع أفضل المنتجات الإلكترونية والحلول التقنية. هدفنا هو توفير منتجات عالية الجودة بأسعار تنافسية وتقديم أفضل خدمة للعملاء. نحن نؤمن بأن التكنولوجيا يجب أن تكون في متناول الجميع، وهذا ما نسعى لتحقيقه.
             </p>
-            <a href="https://wa.me/+213550776257" target="_blank" class="btn-primary inline-block text-white px-8 py-4 font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                اطلب الآن عبر الواتساب
-            </a>
-            <p class="mt-4 text-sm opacity-80">. سيتم الرد فوراً على طلبكم.</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 md:py-24 container-padding">
+        <div class="container mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">اتصل بنا</h2>
+            <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+                <!-- Form element with ID -->
+                <form id="contactForm">
+                    <div class="mb-4">
+                        <label for="name" class="block text-gray-700 font-bold mb-2">الاسم:</label>
+                        <input type="text" id="name" name="name" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="block text-gray-700 font-bold mb-2">البريد الإلكتروني:</label>
+                        <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="message" class="block text-gray-700 font-bold mb-2">الرسالة:</label>
+                        <textarea id="message" name="message" rows="5" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-600 transition-colors duration-300">إرسال</button>
+                    </div>
+                </form>
+                <!-- Message area for form submission feedback -->
+                <div id="formMessage" class="mt-4 text-center hidden"></div>
+            </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-400 py-8 text-center">
-        <p>&copy; 2024 جميع الحقوق محفوظة.</p>
+        <p>&copy; 2024 جميع الحقوق محفوظة لمتجري.</p>
     </footer>
 
-<!-- JavaScript for form submission to Google Sheets -->
+    <!-- JavaScript for form submission to Google Sheets -->
     <script>
         const form = document.getElementById('contactForm');
         const formMessage = document.getElementById('formMessage');
@@ -155,5 +175,3 @@
     </script>
 </body>
 </html>
-</html>
-
